@@ -1,0 +1,1 @@
+In order to run build programm with -lws2_32 flag
