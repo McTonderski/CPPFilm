@@ -22,4 +22,4 @@ class InternetHandler{
     int getHeaderLength(char *content);
     char *readUrl2(char *szUrl, long &bytesReturnedOut, char **headerOut);
 
-}
+};
