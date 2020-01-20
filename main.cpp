@@ -7,6 +7,7 @@
 #include <sstream>
 #include <fstream>
 #include "rapidxml/rapidxml.hpp"
+#include "internetHandler.h"
 
 using namespace rapidxml;
 using namespace std;
