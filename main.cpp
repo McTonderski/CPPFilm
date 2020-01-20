@@ -5,7 +5,10 @@
 #include <vector>
 #include <locale>
 #include <sstream>
+#include <fstream>
 #include "rapidxml/rapidxml.hpp"
+
+using namespace rapidxml;
 using namespace std;
 
 #pragma comment(lib,"ws2_32.lib")
@@ -19,7 +22,6 @@ class DisplayWeb{
         int lineCount=0;
         int rowCount=0;
         struct hostent *host;
-        std::cout<<"here";
         locale local;
         char buffer[10000];
         int i = 0 ;
@@ -30,7 +32,6 @@ class DisplayWeb{
         string API_KEY = "6d584491";
         //website url
         string url =  "http://www.omdbapi.com/?&apikey=" + API_KEY + "&t=avengers";
-        cout<<url;
         //HTTP GET
         string get_http = "GET / HTTP/1.1\r\nHost: " + url + "\r\nConnection: close\r\n\r\n";
 
@@ -66,8 +67,6 @@ class DisplayWeb{
                     i += 1;
                 }               
             }
-            
-            std::cout<<"here";
 
             closesocket(Socket);
             WSACleanup();
@@ -79,15 +78,29 @@ class DisplayWeb{
 
 class Collection{
     private:
-        //std::map() movies;
+        
 };
 
 class XMLParser{
     public:
-    void init(){
-        DisplayWeb web;
-        string xml_target = web.getXML();
-        std::cout<<xml_target;
+    void extractor()
+    {
+        
+        xml_document <> doc;
+        xml_node<> * root_node;
+        ifstream file ("samplexml.xml");
+        vector<char>buffer((istreambuf_iterator<char>(file)),istreambuf_iterator<char>());
+        buffer.push_back('\0');
+        doc.parse<0>(&buffer[0]);
+        root_node = doc.first_node("root");
+        for (xml_node<> * brewery_node = root_node->first_node("movie"); brewery_node != nullptr; brewery_node = brewery_node->next_sibling())
+        {
+            printf("I have visited %s in %s. \n", 
+                brewery_node->first_attribute("title")->value(),
+                brewery_node->first_attribute("year")->value());
+                // Interate over the beers
+        }
+        system("pause");
     }
 };
 
@@ -111,7 +124,7 @@ class Menu{
             {
             case 1:
                 XMLParser parser;
-                parser.init();
+                parser.extractor();
                 break;
             
             default:
@@ -126,7 +139,11 @@ class Menu{
 
 
 int main( void ){
-    Menu menu;
-    menu.display_menu();
+    // Menu menu;
+    // menu.display_menu();
+    // XMLParser xml;
+    // xml.extractor();
+    DisplayWeb web;
+    cout<<web.getXML();
     return 0;
 }
