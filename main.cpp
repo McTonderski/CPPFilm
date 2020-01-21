@@ -46,14 +46,18 @@ class XMLParser{
 
 class Collection{
     list<std::string> lista_filmow;
+    list<std::pair<std::string, int>> collection;
     public:
-    Collection(std::string address){
+    Collection(std::string address = "samplexml.xml"){
         ifstream file(address);
         vector<char>buffer((istreambuf_iterator<char>(file)),istreambuf_iterator<char>());
         XMLParser parser;
+        std::cout<<"id\t\t\tname\t\t\tscore"<<std::endl;
         lista_filmow = parser.extractor(buffer);
+        int counter = 0;
+
         for(auto i: lista_filmow){
-            std::cout<<i<<std::endl;
+            std::cout<<counter++<<":\t\t\t"+i<<std::endl;
         }
     }  
 };
@@ -69,8 +73,7 @@ class Menu{
         void display_menu(){
             std::cout<<"________MOVIE DB__________________"<<std::endl;
             std::cout<<"1. Show your collection.__________"<<std::endl;
-            std::cout<<"2. Load your collection.__________"<<std::endl;
-            std::cout<<"3. Export your collection.________"<<std::endl;
+            std::cout<<"2. Export your collection.________"<<std::endl;
             int temp_choice;
             string temp;
             std::cin>>temp;
@@ -80,8 +83,12 @@ class Menu{
                 case 1:
                 {
                     std::string collection_link;
+                    std::cout<<"Provide a path to your Collection ( a for default Collection ): ";
                     std::cin >> collection_link;
-                    Collection collection(collection_link);
+                    if(collection_link == "a")
+                        Collection collection;
+                    else
+                        Collection collection(collection_link);
                     break;
                 }
                 default:
