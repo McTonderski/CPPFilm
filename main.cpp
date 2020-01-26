@@ -61,17 +61,24 @@ public:
         collection_menu();
     }  
     void print_collection(){
+        int iterator = 0;
         for(auto i: lista_filmow){
-            std::cout<<i<<std::endl;
+            std::cout<<iterator<<": "<<i<<std::endl;
+            iterator++;
         }
     }
     void add_movie(){
         cout<<"Write Movie title you want to add to your collection: ";
         string movie_name;
         cin >> movie_name;
-        string url = "http://www.omdbapi.com/?&apikey=6d584491&r=xml&t=";
-        auto answea = exec(("curl " + url + movie_name).c_str());
-        cout<<answea;
+        string url = "http://www.omdbapi.com/?apikey=6d584491^&r=xml^&t=";
+        url += movie_name;
+        auto answea = exec(("curl " + url).c_str());
+        XMLParser parser;
+        std::vector<char> data(answea.begin(), answea.end());
+        auto response = parser.extractor(data);
+        lista_filmow.merge(response);
+        print_collection();
     }
 
     std::string exec(const char* cmd) {
@@ -88,7 +95,12 @@ public:
 }
 
     void del_movie(){
-
+        list<string>::iterator it;
+        string temp;
+        cin>>temp;
+        advance(it, stoi(temp));
+        lista_filmow.erase(it);
+        print_collection();
     }
 
     void export_collection(){
