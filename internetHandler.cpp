@@ -4,6 +4,7 @@
 #include "internetHandler.h"
 
 std::string InternetHandler::get_response(std::string title){
+    std::cout<<"here: ";
     const int bufLen = 1024;
     std::string base_url = "http://www.omdbapi.com/?&apikey=6d584491&r=xml&t=";
     base_url += title;
@@ -16,7 +17,6 @@ std::string InternetHandler::get_response(std::string title){
 
     if ( WSAStartup(0x101, &wsaData) != 0)
         std::cout<<"No valid";
-
 
     memBuffer = readUrl2(szUrl, fileSize, &headerBuffer);
     return memBuffer;
@@ -35,10 +35,10 @@ std::string InternetHandler::get_response(std::string title){
     WSACleanup();
 }
 
-void InternetHandler::mParseUrl(char *mUrl, string &serverName, string &filepath, string &filename)
+void InternetHandler::mParseUrl(char *mUrl, std::string &serverName, std::string &filepath, std::string &filename)
 {
-    string::size_type n;
-    string url = mUrl;
+    std::string::size_type n;
+    std::string url = mUrl;
 
     if (url.substr(0,7) == "http://")
         url.erase(0,7);
@@ -47,7 +47,7 @@ void InternetHandler::mParseUrl(char *mUrl, string &serverName, string &filepath
         url.erase(0,8);
 
     n = url.find('/');
-    if (n != string::npos)
+    if (n != std::string::npos)
     {
         serverName = url.substr(0,n);
         filepath = url.substr(n);
@@ -132,7 +132,7 @@ char *InternetHandler::readUrl2(char *szUrl, long &bytesReturnedOut, char **head
     char readBuffer[bufSize], sendBuffer[bufSize], tmpBuffer[bufSize];
     char *tmpResult=NULL, *result;
     SOCKET conn;
-    string server, filepath, filename;
+    std::string server, filepath, filename;
     long totalBytesRead, thisReadSize, headerLen;
 
     mParseUrl(szUrl, server, filepath, filename);
@@ -188,3 +188,7 @@ char *InternetHandler::readUrl2(char *szUrl, long &bytesReturnedOut, char **head
     return(result);
 }
 
+int main(){
+    InternetHandler internetHandler;
+    std::cout<<"haha: "<<internetHandler.get_response("100");
+}

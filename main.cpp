@@ -4,8 +4,14 @@
 #include <iostream>
 #include <vector>
 #include <locale>
+#include <stdio.h>
 #include <sstream>
 #include <list>
+#include <stdlib.h>
+#include <array>
+#include <memory>
+#include <stdexcept>
+#include <cstdio>
 #include <fstream>
 #include <map>
 #include "rapidxml/rapidxml.hpp"
@@ -33,10 +39,6 @@ class XMLParser{
         root_node = doc.first_node("root");
         for (xml_node<> * brewery_node = root_node->first_node("movie"); brewery_node != nullptr; brewery_node = brewery_node->next_sibling())
         {   
-            // printf("The movie %s was released in %s. \n", 
-            //     brewery_node->first_attribute("title")->value(),
-            //     brewery_node->first_attribute("year")->value());
-            //     // Interate over the beers
             std::string a(const_charer(brewery_node->first_attribute("title")->value()));
             temp.push_back(a);
         }
@@ -45,17 +47,76 @@ class XMLParser{
 };
 
 class Collection{
+private:
     list<std::string> lista_filmow;
-    public:
+    std::string addr;
+public:
     Collection(std::string address){
+        addr = address;
         ifstream file(address);
         vector<char>buffer((istreambuf_iterator<char>(file)),istreambuf_iterator<char>());
         XMLParser parser;
         lista_filmow = parser.extractor(buffer);
+        print_collection();
+        collection_menu();
+    }  
+    void print_collection(){
         for(auto i: lista_filmow){
             std::cout<<i<<std::endl;
         }
-    }  
+    }
+    void add_movie(){
+        cout<<"Write Movie title you want to add to your collection: ";
+        string movie_name;
+        cin >> movie_name;
+        string url = "http://www.omdbapi.com/?&apikey=6d584491&r=xml&t=";
+        auto answea = exec(("curl " + url + movie_name).c_str());
+        cout<<answea;
+    }
+
+    std::string exec(const char* cmd) {
+        std::array<char, 128> buffer;
+        std::string result;
+        std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd, "r"), _pclose);
+        if (!pipe) {
+            throw std::runtime_error("popen() failed!");
+        }
+        while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+            result += buffer.data();
+        }
+    return result;
+}
+
+    void del_movie(){
+
+    }
+
+    void export_collection(){
+
+    }
+
+    void collection_menu(){
+        std::cout<<"------Collection menu------"<<std::endl;
+        cout<<"1. add movie"<<endl;
+        cout<<"2. delete movie"<<endl;
+        cout<<"3. export collection"<<endl;
+        string temp;
+        cin>>temp;
+        switch(stoi(temp)){
+            case 1:
+                add_movie();
+                break;
+            case 2:
+                del_movie();
+                break;
+            case 3:
+                export_collection();
+                break;
+            default:
+                collection_menu();
+                break;
+        };      
+    }
 };
 
 

@@ -33,14 +33,12 @@ int main()
 
 
     memBuffer = readUrl2(szUrl, fileSize, &headerBuffer);
-    printf("returned from readUrl\n");
-    printf("data returned:\n%s", memBuffer);
     if (fileSize != 0)
     {
-        printf("Got some data\n");
         fp = fopen("downloaded.file", "wb");
         fwrite(memBuffer, 1, fileSize, fp);
         fclose(fp);
+        printf("%s", memBuffer);
          delete(memBuffer);
         delete(headerBuffer);
     }
@@ -166,7 +164,6 @@ char *readUrl2(char *szUrl, long &bytesReturnedOut, char **headerOut)
     send(conn, sendBuffer, strlen(sendBuffer), 0);
 
 //    SetWindowText(edit3Hwnd, sendBuffer);
-    printf("Buffer being sent:\n%s", sendBuffer);
 
     ///////////// step 3 - get received bytes ////////////////
     // Receive until the peer closes the connection
