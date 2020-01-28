@@ -9,6 +9,7 @@
 #include <list>
 #include <stdlib.h>
 #include <array>
+#include <iomanip>
 #include <memory>
 #include <stdexcept>
 #include <cstdio>
@@ -22,6 +23,40 @@ using namespace std;
 
 #pragma comment(lib,"ws2_32.lib")
 
+class Movie{
+private:
+    string title;
+    int year;
+    int rate;
+public:
+    Movie(string title, int year, int rate){
+        this->title = title;
+        this->year = year;
+        this->rate = rate;
+    }
+    bool operator < (Movie const &rhs){
+        return true;
+    }
+    void set_title(string title){
+        this->title = title;
+    }
+    void set_year(int year){
+        this->year = year;
+    }
+    void set_rate(int rating){
+        this->rate = rating;
+    }
+    string get_title(){
+        return this->title;
+    }
+    int get_year(){
+        return this->year;
+    }
+    int get_rate(){
+        return this->rate;
+    }
+};
+
 
 class XMLParser{
     private:
@@ -29,23 +64,23 @@ class XMLParser{
             return inpute;
         }
     public:
-    list<std::string> extractor(vector<char> buffer)
+    list<Movie> extractor(vector<char> buffer)
     {
         xml_document <> doc;
         xml_node<> * root_node;
         buffer.push_back('\0');
-        list<std::string> temp;
+        list<Movie> temp;
         doc.parse<0>(&buffer[0]);
         root_node = doc.first_node("root");
         for (xml_node<> * brewery_node = root_node->first_node("movie"); brewery_node != nullptr; brewery_node = brewery_node->next_sibling())
         {   
-            std::string a(const_charer(brewery_node->first_attribute("title")->value()));
+            Movie a(const_charer(brewery_node->first_attribute("title")->value()), stoi(const_charer(brewery_node->first_attribute("year")->value())), stoi(const_charer(brewery_node->first_attribute("imdbRating")->value())));
             temp.push_back(a);
         }
         return temp;
     }
 
-    bool intractor(list<string> data){
+    bool intractor(list<Movie> data){
         ofstream file("out.xml");
         xml_document <> doc;    
         xml_node<>* decl = doc.allocate_node(node_declaration);
@@ -56,11 +91,14 @@ class XMLParser{
         xml_node<>* pgnx = doc.allocate_node(node_element, "root");
         pgnx->append_attribute(doc.allocate_attribute("response", "TRUE"));
         doc.append_node(pgnx);
-        list<string>::iterator it;
+        list<Movie>::iterator it;
         for (it = data.begin(); it != data.end(); it++)
         {
             xml_node<>* child = doc.allocate_node(node_element, "movie");
-            child->append_attribute(doc.allocate_attribute("name", (*it).c_str()));
+            child->append_attribute(doc.allocate_attribute("title", it->get_title().c_str()));
+            char buff [20];
+            child->append_attribute(doc.allocate_attribute("year", itoa(it->get_year(), buff, 10)));
+            child->append_attribute(doc.allocate_attribute("imdbRating", itoa(it->get_rate(), buff, 10)));
             pgnx->append_node(child);
         }
 
@@ -70,13 +108,13 @@ class XMLParser{
         file.close();
         doc.clear();
 
-        return false;
+        return true;
     }
 };
 
 class Collection{
 private:
-    list<std::string> lista_filmow;
+    list<Movie> lista_filmow;
     std::string addr;
 public:
     Collection(std::string address){
@@ -88,13 +126,26 @@ public:
         print_collection();
         collection_menu();
     }  
+
+    Collection(string address, bool tru){
+        addr = address;
+        ifstream file(address);
+        vector<char>buffer((istreambuf_iterator<char>(file)),istreambuf_iterator<char>());
+        XMLParser parser;
+        lista_filmow = parser.extractor(buffer);
+        parser.intractor(lista_filmow);
+    }
+
     void print_collection(){
         int iterator = 0;
-        for(auto i: lista_filmow){
-            std::cout<<iterator<<": "<<i<<std::endl;
+        cout<<"id"<<setw(20)<<"title"<<setw(20)<<"year"<<setw(20)<<"rate"<<endl;
+        list<Movie>::iterator it;
+        for(it = lista_filmow.begin(); it != lista_filmow.end(); it++){
+            cout<<iterator<<setw(20)<<it->get_title()<<setw(20)<<it->get_year()<<setw(20)<<it->get_rate()<<std::endl;
             iterator++;
         }
     }
+
     void add_movie(){
         cout<<"Write Movie title you want to add to your collection: ";
         string movie_name;
@@ -104,7 +155,7 @@ public:
         auto answea = exec(("curl " + url).c_str());
         XMLParser parser;
         std::vector<char> data(answea.begin(), answea.end());
-        auto response = parser.extractor(data);
+        list<Movie> response = parser.extractor(data);
         lista_filmow.merge(response);
         print_collection();
         collection_menu();
@@ -124,12 +175,14 @@ public:
     }
 
     void del_movie(){
-        list<string>::iterator it;
+        list<Movie>::iterator it;
         string temp;
         cin>>temp;
+        it = lista_filmow.begin();
         advance(it, stoi(temp));
         lista_filmow.erase(it);
         print_collection();
+        collection_menu();
     }
 
     void export_collection(){
@@ -142,6 +195,7 @@ public:
             cout<<"There were some errors"<<endl;
         }
         print_collection();
+        collection_menu();
     }
 
     void collection_menu(){
@@ -149,6 +203,7 @@ public:
         cout<<"1. add movie"<<endl;
         cout<<"2. delete movie"<<endl;
         cout<<"3. export collection"<<endl;
+        cout<<"4. exit"<<endl;
         string temp;
         cin>>temp;
         switch(stoi(temp)){
@@ -160,6 +215,9 @@ public:
                 break;
             case 3:
                 export_collection();
+                break;
+            case 4:
+                return;
                 break;
             default:
                 collection_menu();
@@ -177,10 +235,11 @@ class Menu{
 
         }
         void display_menu(){
-            std::cout<<"________MOVIE DB__________________"<<std::endl;
-            std::cout<<"1. Show your collection.__________"<<std::endl;
-            std::cout<<"2. Load your collection.__________"<<std::endl;
-            std::cout<<"3. Export your collection.________"<<std::endl;
+            std::cout<<"        MOVIE DB                    "<<std::endl;
+            std::cout<<"1. Show your collection.            "<<std::endl;
+            std::cout<<"2. Load your collection.            "<<std::endl;
+            std::cout<<"3. Export your collection.          "<<std::endl;
+            std::cout<<"4. Exit.                            "<<std::endl;
             int temp_choice;
             string temp;
             std::cin>>temp;
@@ -189,11 +248,27 @@ class Menu{
             {
                 case 1:
                 {
+                    std::string collection_link = "samplexml.xml";
+                    Collection collection(collection_link);
+                    break;
+                }
+                case 2:
+                {
                     std::string collection_link;
                     std::cin >> collection_link;
                     Collection collection(collection_link);
                     break;
                 }
+                case 3: 
+                {
+                    string link = "samplexml.xml";
+                    Collection collection(link, true);
+                    this->display_menu();
+                    break;
+                }
+                case 4:
+                    return;
+                    break;
                 default:
                     display_menu();
                     break;
