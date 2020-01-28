@@ -15,7 +15,7 @@
 #include <fstream>
 #include <map>
 #include "rapidxml/rapidxml.hpp"
-#include "internetHandler.h"
+#include "rapidxml/rapidxml_print.hpp"
 
 using namespace rapidxml;
 using namespace std;
@@ -43,6 +43,34 @@ class XMLParser{
             temp.push_back(a);
         }
         return temp;
+    }
+
+    bool intractor(list<string> data){
+        ofstream file("out.xml");
+        xml_document <> doc;    
+        xml_node<>* decl = doc.allocate_node(node_declaration);
+        decl->append_attribute(doc.allocate_attribute("version", "1.0"));
+        decl->append_attribute(doc.allocate_attribute("encoding", "utf-8"));
+        doc.append_node(decl);
+
+        xml_node<>* pgnx = doc.allocate_node(node_element, "root");
+        pgnx->append_attribute(doc.allocate_attribute("response", "TRUE"));
+        doc.append_node(pgnx);
+
+        for (auto i: data)
+        {
+            xml_node<>* child = doc.allocate_node(node_element, "movie");
+            child->append_attribute(doc.allocate_attribute("name", i.c_str()));
+            pgnx->append_node(child);
+        }
+
+        file << doc;
+
+
+        file.close();
+        doc.clear();
+
+        return false;
     }
 };
 
@@ -79,6 +107,7 @@ public:
         auto response = parser.extractor(data);
         lista_filmow.merge(response);
         print_collection();
+        collection_menu();
     }
 
     std::string exec(const char* cmd) {
@@ -104,7 +133,15 @@ public:
     }
 
     void export_collection(){
-
+        XMLParser parser;
+        if(parser.intractor(lista_filmow))
+        {
+            cout<<"FILE HAS BEEN EXPORTED SUCCESSFULLY"<<endl;
+        }
+        else{
+            cout<<"There were some errors"<<endl;
+        }
+        print_collection();
     }
 
     void collection_menu(){
