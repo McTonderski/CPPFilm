@@ -56,11 +56,11 @@ class XMLParser{
         xml_node<>* pgnx = doc.allocate_node(node_element, "root");
         pgnx->append_attribute(doc.allocate_attribute("response", "TRUE"));
         doc.append_node(pgnx);
-
-        for (auto i: data)
+        list<string>::iterator it;
+        for (it = data.begin(); it != data.end(); it++)
         {
             xml_node<>* child = doc.allocate_node(node_element, "movie");
-            child->append_attribute(doc.allocate_attribute("name", i.c_str()));
+            child->append_attribute(doc.allocate_attribute("name", (*it).c_str()));
             pgnx->append_node(child);
         }
 
@@ -120,8 +120,8 @@ public:
         while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
             result += buffer.data();
         }
-    return result;
-}
+        return result;
+    }
 
     void del_movie(){
         list<string>::iterator it;
