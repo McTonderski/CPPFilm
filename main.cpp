@@ -290,10 +290,7 @@ public:
 class Menu{
     private:
         int choice {};
-    public:    
-        void display_collection(){
-
-        }
+    public:   
         void display_menu(){
             std::cout<<"        MOVIE DB                    "<<std::endl;
             std::cout<<"1. Show your collection.            "<<std::endl;
