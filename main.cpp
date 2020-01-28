@@ -13,6 +13,7 @@
 #include <memory>
 #include <stdexcept>
 #include <cstdio>
+#include <string>
 #include <fstream>
 #include <map>
 #include "rapidxml/rapidxml.hpp"
@@ -46,13 +47,13 @@ public:
     void set_rate(int rating){
         this->rate = rating;
     }
-    string get_title(){
+    string get_title() const {
         return this->title;
     }
-    int get_year(){
+    int get_year() const {
         return this->year;
     }
-    int get_rate(){
+    int get_rate() const {
         return this->rate;
     }
 };
@@ -96,9 +97,8 @@ class XMLParser{
         {
             xml_node<>* child = doc.allocate_node(node_element, "movie");
             child->append_attribute(doc.allocate_attribute("title", it->get_title().c_str()));
-            char buff [20];
-            child->append_attribute(doc.allocate_attribute("year", itoa(it->get_year(), buff, 10)));
-            child->append_attribute(doc.allocate_attribute("imdbRating", itoa(it->get_rate(), buff, 10)));
+            child->append_attribute(doc.allocate_attribute("year", to_string(it->get_year()).c_str()));
+            child->append_attribute(doc.allocate_attribute("imdbRating", to_string(it->get_rate()).c_str()));
             pgnx->append_node(child);
         }
 
@@ -198,12 +198,69 @@ public:
         collection_menu();
     }
 
+    void sort_collection(){
+        std::cout<<"------Sort after:------"<<std::endl;
+        cout<<"1. title"<<endl;
+        cout<<"2. year"<<endl;
+        cout<<"3. rate"<<endl;
+        cout<<"4. exit"<<endl;
+        string temp;
+        cin>>temp;
+        switch(stoi(temp)){
+            case 1:
+                sort_title();
+                break;
+            case 2:
+                sort_year();
+                break;
+            case 3:
+                sort_rate();
+                break;
+            case 4:
+                return;
+                break;
+            default:
+                collection_menu();
+                break;
+        };      
+    }
+    struct LastNameComp {
+        bool operator()(const Movie& a, const Movie& b) {
+            return std::lexicographical_compare(
+               a.get_title().begin(), a.get_title().end(),
+               b.get_title().begin(), b.get_title().end()  
+            );
+        }
+    };
+    void sort_title(){
+        lista_filmow.sort(LastNameComp());
+        print_collection();
+        collection_menu();
+    }
+    
+    void sort_year(){
+        lista_filmow.sort([](const Movie & l, const Movie & r){
+            return (l.get_year() < r.get_year()) ? true : false;
+        });
+        print_collection();
+        collection_menu();
+    }
+    
+    void sort_rate(){
+        lista_filmow.sort([](const Movie & l, const Movie & r){
+            return (l.get_rate() < r.get_rate()) ? true : false;
+        });
+        print_collection();
+        collection_menu();
+    }
+
     void collection_menu(){
         std::cout<<"------Collection menu------"<<std::endl;
         cout<<"1. add movie"<<endl;
         cout<<"2. delete movie"<<endl;
         cout<<"3. export collection"<<endl;
-        cout<<"4. exit"<<endl;
+        cout<<"4. sort collection"<<endl;
+        cout<<"5. exit"<<endl;
         string temp;
         cin>>temp;
         switch(stoi(temp)){
@@ -217,6 +274,9 @@ public:
                 export_collection();
                 break;
             case 4:
+                sort_collection();
+                break;
+            case 5:
                 return;
                 break;
             default:
